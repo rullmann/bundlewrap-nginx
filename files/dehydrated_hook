@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ ${1} == "deploy_cert" ]; then
+    echo " - Restarting nginx"
+    /usr/bin/systemctl restart nginx
+else
+    echo " - did something went wrong here?"
+fi

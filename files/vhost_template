@@ -1,0 +1,199 @@
+server {
+    listen ${vhost.get('ip', '*')}:80;
+% if vhost.get('ipv6', {}):
+    listen [${vhost.get('ipv6')}]:80;
+% endif
+
+    server_name ${vhost.get('domain', vhost_name)}
+% for domain in vhost.get('domain_aliases', []):
+                ${domain}
+% endfor
+                ;
+
+    server_tokens off;
+
+% if not vhost.get('letsencrypt', {}).get('bootstrap', False):
+    return 301 https://$server_name$request_uri;
+% endif
+
+% if 'letsencrypt' in vhost:
+    location ^~ /.well-known/acme-challenge {
+        allow all;
+        alias /var/www/${vhost_name}/.well_known/;
+    }
+% endif
+
+}
+
+% if not vhost.get('letsencrypt', {}).get('bootstrap', False):
+server {
+    listen ${vhost.get('ip', '*')}:443 http2 ssl;
+% if vhost.get('ipv6', {}):
+    listen [${vhost.get('ipv6')}]:443 http2 ssl;
+% endif
+
+    server_name ${vhost.get('domain', vhost_name)}
+% for domain in vhost.get('domain_aliases', []):
+                ${domain}
+% endfor
+                ;
+
+    server_tokens off;
+
+% if vhost.get('force_domain', True):
+    set $primary_domain "${vhost.get('domain', vhost_name)}";
+    if ($host != $primary_domain) {
+        return 301 $scheme://$primary_domain$request_uri;
+    }
+% endif
+
+    root /var/www/${vhost_name}/htdocs;
+
+    include global/restrictions.conf;
+
+    # strip Proxy header to mitigate CGI vuln (https://httpoxy.org)
+    # (when talking to other HTTP servers, i.e. load balancing)
+    proxy_set_header Proxy "";
+
+% if vhost.get('autoindex', False):
+    autoindex on;
+% endif
+
+    ## Access and error logs.
+    access_log /var/www/${vhost_name}/logs/access.log ${vhost.get('log_format', '')};
+    error_log  /var/www/${vhost_name}/logs/error.log;
+
+    ## Server certificate and key.
+% if 'letsencrypt' in vhost:
+    ssl_certificate      /etc/letsencrypt/certs/${vhost.get('domain', vhost_name)}/fullchain.pem;
+    ssl_certificate_key  /etc/letsencrypt/certs/${vhost.get('domain', vhost_name)}/privkey.pem;
+% else:
+    ssl_certificate      /etc/ssl/${vhost_name}.crt;
+    ssl_certificate_key  /etc/ssl/private/${vhost_name}.key;
+% endif
+
+% if vhost.get('hsts', True):
+    add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+% endif
+    ssl_session_cache builtin:1000 shared:SSL:10m;
+
+% for (url, ranges) in sorted(vhost.get('restrict_to_ip_ranges', {}).items()):
+    location ${url} {
+% for range in ranges:
+        allow ${range};
+% endfor
+        deny all;
+% if vhost.get('hsts', True):
+        add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+% endif
+    }
+% endfor
+
+% for (url, data) in sorted(vhost.get('basic_auth', {}).items()):
+    % if url is None:
+    auth_basic "${data.get('realm', "Restricted Access")}";
+    auth_basic_user_file /var/www/${vhost_name}/.htpasswd-${data['name']};
+    % else:
+    location ${url} {
+% if vhost.get('hsts', True):
+        add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+% endif
+        auth_basic "${data.get('realm', "Restricted Access")}";
+        auth_basic_user_file /var/www/${vhost_name}/.htpasswd-${data['name']};
+        % if data.get('autoindex', False):
+        autoindex on;
+        % endif
+        % if data.get('allowed_ips', False):
+        satisfy any;
+            % for ip in data['allowed_ips']:
+        allow ${ip};
+            % endfor
+        % endif
+        % if data.get('proxy_pass', None):
+        proxy_pass ${data['proxy_pass']};
+        proxy_http_version ${data.get('proxy_http_version', '1.1')};
+        % endif
+        % if vhost.get('proxy_pass_forward_headers', False):
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Server $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        % endif
+        % if vhost.get('proxy_read_timeout', None):
+        proxy_read_timeout ${vhost['proxy_read_timeout']};
+        % endif
+        % if 'fpm_proxy' in vhost:
+        location ~ ^.+\.php {
+            include global/fpm.conf;
+            fastcgi_pass ${vhost['fpm_proxy']};
+            % if 'fpm_read_timeout' in vhost:
+            fastcgi_read_timeout ${vhost['fpm_read_timeout']};
+             % endif
+% if vhost.get('hsts', True):
+            add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+% endif
+        }
+        % endif
+        % if data.get('alias', None):
+        alias ${data['alias']};
+        % endif
+    }
+    % endif
+% endfor
+
+% if 'fpm_proxy' in vhost:
+    location ~ ^.+\.php {
+        include global/fpm.conf;
+        fastcgi_pass ${vhost['fpm_proxy']};
+        % if 'fpm_read_timeout' in vhost:
+        fastcgi_read_timeout ${vhost['fpm_read_timeout']};
+        % endif
+% if vhost.get('hsts', True):
+        add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+% endif
+    }
+
+    index index.php index.html;
+% endif
+
+    client_max_body_size ${vhost.get('client_max_body_size', '20m')};
+
+% for (location, proxy_pass) in sorted(vhost.get('proxy_pass', {}).items()):
+    location ^~ ${location} {
+        proxy_pass ${proxy_pass};
+        proxy_http_version ${vhost.get('proxy_http_version', '1.1')};
+        % if vhost.get('proxy_pass_forward_headers', False):
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Server $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        % endif
+        % if vhost.get('proxy_read_timeout', None):
+        proxy_read_timeout ${vhost['proxy_read_timeout']};
+        % endif
+% if vhost.get('hsts', True):
+        add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+% endif
+    }
+% endfor
+
+% for flag in ['', 'last', 'break', 'redirect', 'permanent']:
+    % for (src, dst) in sorted(vhost.get('rewrite' + ('_' + flag if flag else flag), {}).items()):
+        rewrite ${src} ${dst} ${flag};
+    % endfor
+% endfor
+
+% if vhost.get('extras', False):
+    include /etc/nginx/extras/${vhost_name};
+% endif
+
+% if 'generic' in vhost:
+    include /etc/nginx/generic/${vhost['generic']};
+% endif
+
+}
+% endif

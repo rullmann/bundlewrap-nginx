@@ -1,0 +1,1 @@
+0 6 * * 6 root /opt/dehydrated/dehydrated -c -d ${domain} -f /opt/dehydrated/config_${vhost_name}
