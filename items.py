@@ -3,7 +3,7 @@ import os
 nginx_cert_dir = os.getcwd() + "/data/nginx/etc/ssl"
 nginx_extras_dir = os.getcwd() + "/data/nginx/etc/nginx/extras"
 
-pkg_yum = {
+pkg_dnf = {
     'nginx': {},
 }
 
@@ -12,7 +12,7 @@ svc_systemd = {
         'enabled': True,
         'needs': [
             'action:generate_dhparam',
-            'pkg_yum:nginx',
+            'pkg_dnf:nginx',
         ],
     },
 }
@@ -23,7 +23,7 @@ directories = {
         "owner": "nginx",
         "group": "nginx",
         'needs': [
-            "pkg_yum:nginx",
+            "pkg_dnf:nginx",
         ],
     },
     "/etc/nginx/global": {
@@ -31,7 +31,7 @@ directories = {
         "owner": "root",
         "group": "root",
         'needs': [
-            "pkg_yum:nginx",
+            "pkg_dnf:nginx",
         ],
     },
     "/etc/nginx/generic": {
@@ -39,7 +39,7 @@ directories = {
         "owner": "root",
         "group": "root",
         'needs': [
-            "pkg_yum:nginx",
+            "pkg_dnf:nginx",
         ],
     },
     "/etc/nginx/extras": {
@@ -47,7 +47,7 @@ directories = {
         "owner": "root",
         "group": "root",
         'needs': [
-            "pkg_yum:nginx",
+            "pkg_dnf:nginx",
         ],
     },
 }
@@ -58,7 +58,7 @@ actions = {
         'unless': "test -f /etc/ssl/dhparams.pem",
         'cascade_skip': False,
         'needs': [
-            "pkg_yum:openssl",
+            "pkg_dnf:openssl",
         ],
     },
 }
@@ -71,7 +71,7 @@ files = {
         'mode': "0644",
         'content_type': "mako",
         'needs': [
-            "pkg_yum:nginx",
+            "pkg_dnf:nginx",
         ],
         'triggers': [
             "svc_systemd:nginx:restart",
@@ -83,7 +83,7 @@ files = {
         'group': "root",
         'mode': "0644",
         'needs': [
-            "pkg_yum:nginx",
+            "pkg_dnf:nginx",
         ],
         'triggers': [
             "svc_systemd:nginx:restart",
@@ -98,7 +98,7 @@ files = {
             "svc_systemd:nginx:restart",
         ],
         'needs': [
-            "pkg_yum:nginx",
+            "pkg_dnf:nginx",
         ],
     },
     '/etc/nginx/global/fpm.conf': {
@@ -107,7 +107,7 @@ files = {
         'group': "root",
         'mode': "0644",
         'needs': [
-            "pkg_yum:nginx",
+            "pkg_dnf:nginx",
         ],
         'triggers': [
             "svc_systemd:nginx:restart",
@@ -119,7 +119,7 @@ files = {
         'group': "root",
         'mode': "0644",
         'needs': [
-            "pkg_yum:nginx",
+            "pkg_dnf:nginx",
         ],
         'triggers': [
             "svc_systemd:nginx:restart",
@@ -167,7 +167,7 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
             'vhost_name': vhost_name,
         },
         'needs': [
-            "pkg_yum:nginx",
+            "pkg_dnf:nginx",
         ],
         'triggers': [
             "svc_systemd:nginx:reload",
@@ -228,7 +228,7 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
                 'command': "/opt/dehydrated/dehydrated -c -d {} -f /opt/dehydrated/config_{}".format(domain, vhost_name),
                 'cascade_skip': False,
                 'needs': [
-                    "pkg_yum:nginx",
+                    "pkg_dnf:nginx",
                     "git_deploy:/opt/dehydrated",
                 ],
             }
@@ -267,7 +267,7 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
             'group': "root",
             'mode': "0644",
             'needs': [
-                "pkg_yum:nginx",
+                "pkg_dnf:nginx",
             ],
             'triggers': [
                 "svc_systemd:nginx:reload",
@@ -282,7 +282,7 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
             'group': "root",
             'mode': "0644",
             'needs': [
-                "pkg_yum:nginx",
+                "pkg_dnf:nginx",
             ],
             'triggers': [
                 "svc_systemd:nginx:reload",
@@ -311,7 +311,7 @@ if node.has_bundle("firewalld"):
                 'unless': "firewall-cmd --zone={} --list-services | grep https".format(zone),
                 'cascade_skip': False,
                 'needs': [
-                    "pkg_yum:firewalld",
+                    "pkg_dnf:firewalld",
                 ],
                 'triggers': [
                     "action:firewalld_reload",
@@ -324,7 +324,7 @@ if node.has_bundle("firewalld"):
             'unless': "firewall-cmd --zone={} --list-services | grep https".format(default_zone),
             'cascade_skip': False,
             'needs': [
-                "pkg_yum:firewalld",
+                "pkg_dnf:firewalld",
             ],
             'triggers': [
                 "action:firewalld_reload",
@@ -338,7 +338,7 @@ if node.has_bundle("firewalld"):
                 'unless': "firewall-cmd --zone={} --list-services | grep https".format(custom_zone),
                 'cascade_skip': False,
                 'needs': [
-                    "pkg_yum:firewalld",
+                    "pkg_dnf:firewalld",
                 ],
                 'triggers': [
                     "action:firewalld_reload",
@@ -350,7 +350,7 @@ if node.has_bundle("firewalld"):
             'unless': "firewall-cmd --list-services | grep https",
             'cascade_skip': False,
             'needs': [
-                "pkg_yum:firewalld",
+                "pkg_dnf:firewalld",
             ],
             'triggers': [
                 "action:firewalld_reload",
@@ -359,7 +359,7 @@ if node.has_bundle("firewalld"):
 
 if node.has_bundle("collectd"):
 
-    pkg_yum['collectd-nginx'] = {}
+    pkg_dnf['collectd-nginx'] = {}
 
     files['/etc/collectd.d/nginx.conf'] = {
         'source': "collectd_nginx.conf",
@@ -367,7 +367,7 @@ if node.has_bundle("collectd"):
         'owner': "root",
         'group': "root",
         'needs': [
-            "pkg_yum:collectd-nginx",
+            "pkg_dnf:collectd-nginx",
         ],
         'triggers': [
             "svc_systemd:collectd:restart",
