@@ -233,8 +233,6 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
                 ],
             }
 
-
-
     if not 'letsencrypt' in vhost:
 
         files['/etc/ssl/{}.crt'.format(vhost_name)] = {
