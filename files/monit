@@ -1,0 +1,20 @@
+# nginx
+
+  check process nginx
+    matching "/usr/sbin/nginx"
+    start program = "/usr/bin/systemctl start nginx"
+    stop program  = "/usr/bin/systemctl stop nginx"
+    if cpu > 15% for 2 cycles then alert
+    if cpu > 25% for 5 cycles then restart
+    if failed host ${vhost.get('ip', '127.0.0.1')} port 80 protocol http then restart
+    if failed host ${vhost.get('ip', '127.0.0.1')} port 443 protocol https then restart
+
+    # disable content check as of now, as this is only supported for monit 5.20 ongoing
+    ## for needs to be added to check all vhosts
+#% if vhost.get('ipv6', {}):
+#    if failed host "${vhost.get('ipv6')}" port 443 and send "GET / HTTP/1.1\r\nHost: ${vhost.get('domain', vhost_name)}\r\n\r\n" expect "HTTP/[0-9\.]{3} 200.*" then alert
+#% else:
+#    if failed host ${vhost.get('ip', '127.0.0.1')} port 443 and send "GET / HTTP/1.1\r\nHost: ${vhost.get('domain', vhost_name)}\r\n\r\n" expect "HTTP/[0-9\.]{3} 200.*" then alert
+#% endif
+
+    if 3 restarts within 5 cycles then timeout

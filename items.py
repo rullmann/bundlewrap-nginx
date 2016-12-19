@@ -301,6 +301,23 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
             },
         }
 
+    if node.has_bundle("monit"):
+        files['/etc/monit.d/nginx'] = {
+            'source': "monit",
+            'mode': "0640",
+            'owner': "root",
+            'group': "root",
+            'content_type': "mako",
+            'context': {
+                'vhost': vhost,
+                'vhost_name': vhost_name,
+                'domain': domain,
+            },
+            'triggers': [
+                "svc_systemd:monit:restart",
+            ],
+        }
+
 if node.has_bundle("firewalld"):
     if node.metadata.get('nginx', {}).get('firewalld_permitted_zones'):
         for zone in node.metadata.get('nginx', {}).get('firewalld_permitted_zones'):
