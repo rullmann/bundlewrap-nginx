@@ -152,8 +152,21 @@ server {
         % endif
 % if vhost.get('hsts', True):
         add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
-% endif
     }
+
+location ~ ^/(status|ping)$ {
+        access_log off;
+        allow 127.0.0.1;
+        allow ${node.metadata["interfaces"][node.metadata["main_interface"]]["ip_address"]};
+% if node.metadata.get('interfaces', {}).get(node.metadata.get('main_interface')).get('ipv6_address', False):
+        allow ${node.metadata["interfaces"][node.metadata["main_interface"]]["ipv6_address"]};
+% endif
+        deny all;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_pass ${vhost['fpm_proxy']};
+    }
+% endif
 
     index index.php index.html;
 % endif
