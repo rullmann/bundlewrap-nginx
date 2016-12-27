@@ -318,6 +318,23 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
             ],
         }
 
+    if node.has_bundle("collectd") and 'fpm_proxy' in vhost:
+        files['/etc/collectd.d/php-fpm_{}.conf'.format(vhost_name)] = {
+            'source': "collectd_php-fpm_template.conf",
+            'mode': "0640",
+            'owner': "root",
+            'group': "root",
+            'content_type': "mako",
+            'context': {
+                'vhost': vhost,
+                'vhost_name': vhost_name,
+                'domain': domain,
+            },
+            'triggers': [
+                "svc_systemd:collectd:restart",
+            ],
+        }
+
 if node.has_bundle("firewalld"):
     if node.metadata.get('nginx', {}).get('firewalld_permitted_zones'):
         for zone in node.metadata.get('nginx', {}).get('firewalld_permitted_zones'):
@@ -384,6 +401,29 @@ if node.has_bundle("collectd"):
         'needs': [
             "pkg_dnf:collectd-nginx",
         ],
+        'triggers': [
+            "svc_systemd:collectd:restart",
+        ],
+    }
+
+    files['/etc/collectd.d/php-fpm.conf'] = {
+        'source': "collectd_php-fpm.conf",
+        'mode': "0640",
+        'owner': "root",
+        'group': "root",
+        'needs': [
+            "pkg_dnf:collectd-nginx",
+        ],
+        'triggers': [
+            "svc_systemd:collectd:restart",
+        ],
+    }
+
+    files['/etc/collectd.d/types/php-fpm.db'] = {
+        'source': "collectd_php-fpm.types",
+        'mode': "0640",
+        'owner': "root",
+        'group': "root",
         'triggers': [
             "svc_systemd:collectd:restart",
         ],
