@@ -47,6 +47,13 @@ server {
     }
 % endif
 
+% if 'letsencrypt' in vhost:
+    location ^~ /.well-known/acme-challenge {
+        allow all;
+        alias /var/www/${vhost_name}/.well_known/;
+    }
+% endif
+
     root /var/www/${vhost_name}/htdocs;
 
     include global/restrictions.conf;
