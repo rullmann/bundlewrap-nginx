@@ -64,7 +64,7 @@ HOOK=/opt/dehydrated/hook.sh
 #CONTACT_EMAIL=
 
 # Lockfile location, to prevent concurrent access (default: $BASEDIR/lock)
-#LOCKFILE="${BASEDIR}/lock"
+LOCKFILE="${BASEDIR}</%text>/lock_${vhost_name}"
 
-# Option to add CSR-flag indicating OCSP stapling to be mandatory (default: no)
+<%text># Option to add CSR-flag indicating OCSP stapling to be mandatory (default: no)
 #OCSP_MUST_STAPLE="no"</%text>
