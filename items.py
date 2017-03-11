@@ -188,7 +188,6 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
             'group': "root",
             'mode': "0644",
             'context': {
-                'vhost': vhost,
                 'vhost_name': vhost_name,
             },
             'needs': [
@@ -203,7 +202,6 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
             'group': "root",
             'mode': "0644",
             'context': {
-                'vhost': vhost,
                 'vhost_name': vhost_name,
                 'domain': domain,
             },
