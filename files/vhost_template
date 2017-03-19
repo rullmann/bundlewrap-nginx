@@ -84,6 +84,10 @@ server {
 % endif
     ssl_session_cache builtin:1000 shared:SSL:10m;
 
+% if vhost.get('csp_header', {}):
+    add_header Content-Security-Policy "${vhost.get('csp_header')}";
+% endif
+
 % for (url, ranges) in sorted(vhost.get('restrict_to_ip_ranges', {}).items()):
     location ${url} {
 % for range in ranges:
