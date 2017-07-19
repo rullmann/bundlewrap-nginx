@@ -1,3 +1,5 @@
+import re
+
 pkg_dnf = {
     'nginx': {},
 }
