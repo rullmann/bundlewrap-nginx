@@ -1,8 +1,3 @@
-import re
-import os
-nginx_cert_dir = os.getcwd() + "/data/nginx/etc/ssl"
-nginx_extras_dir = os.getcwd() + "/data/nginx/etc/nginx/extras"
-
 pkg_dnf = {
     'nginx': {},
 }
@@ -235,7 +230,7 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
 
         files['/etc/ssl/{}.crt'.format(vhost_name)] = {
             'content_type': 'mako',
-            'source': "{}/{}.{}.crt".format(nginx_cert_dir, node.name, vhost_name),
+            'source': "etc/ssl/{}.{}.crt".format(node.name, vhost_name),
             'owner': "root",
             'group': "root",
             'mode': "0644",
@@ -246,7 +241,7 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
 
         files['/etc/ssl/private/{}.key'.format(vhost_name)] = {
             'content_type': 'mako',
-            'source': "{}/{}.{}.key".format(nginx_cert_dir, node.name, vhost_name),
+            'source': "etc/ssl/{}.{}.key".format(node.name, vhost_name),
             'owner': "root",
             'group': "root",
             'mode': "0600",
@@ -273,7 +268,7 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
     if 'extras' in vhost:
         files['/etc/nginx/extras/{}'.format(vhost_name)] = {
             'content_type': 'text',
-            'source': "{}/{}.{}".format(nginx_extras_dir, node.name, vhost_name),
+            'source': "etc/nginx/extras/{}.{}".format(node.name, vhost_name),
             'owner': "root",
             'group': "root",
             'mode': "0644",
