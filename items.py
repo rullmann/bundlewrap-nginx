@@ -296,6 +296,22 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
             },
         }
 
+    if 'custom_error_pages' in vhost and 'custom_error_pages_use_data' in vhost:
+        files['/var/www/{}/htdocs/404.html'.format(vhost_name)] = {
+            'content_type': 'text',
+            'source': "error_pages/{}.{}.404.html".format(node.name, vhost_name),
+            'owner': "root",
+            'group': "root",
+            'mode': "0644",
+        }
+        files['/var/www/{}/htdocs/50x.html'.format(vhost_name)] = {
+            'content_type': 'text',
+            'source': "error_pages/{}.{}.50x.html".format(node.name, vhost_name),
+            'owner': "root",
+            'group': "root",
+            'mode': "0644",
+        }
+
     if node.has_bundle("monit"):
         files['/etc/monit.d/nginx'] = {
             'source': "monit",
