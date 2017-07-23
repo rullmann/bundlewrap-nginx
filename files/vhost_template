@@ -100,6 +100,11 @@ server {
     }
 % endfor
 
+% if vhost.get('custom_error_pages', False):
+    error_page 404 /404.html;
+    error_page 500 502 503 504 /50x.html;
+% endif
+
 % for (url, data) in sorted(vhost.get('basic_auth', {}).items()):
     % if url is None:
     auth_basic "${data.get('realm', "Restricted Access")}";
