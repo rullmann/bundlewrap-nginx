@@ -10,3 +10,19 @@
         /bin/kill -USR1 `cat /run/nginx.pid 2>/dev/null` 2>/dev/null || true
     endscript
 }
+
+% for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
+/var/www/${vhost_name}/logs/*log {
+    create 0644 nginx nginx
+    daily
+    rotate 10
+    missingok
+    notifempty
+    compress
+    sharedscripts
+    postrotate
+        /bin/kill -USR1 `cat /run/nginx.pid 2>/dev/null` 2>/dev/null || true
+    endscript
+}
+
+% endfor
