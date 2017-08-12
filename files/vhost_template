@@ -170,7 +170,7 @@ server {
         add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
     }
 
-location ~ ^/(status|ping)$ {
+    location ~ ^/(status|ping)$ {
         access_log off;
         allow 127.0.0.1;
         allow ${node.metadata["interfaces"][node.metadata["main_interface"]]["ip_address"]};
