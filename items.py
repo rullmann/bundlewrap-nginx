@@ -6,7 +6,6 @@ pkg_dnf = {
 
 svc_systemd = {
     'nginx': {
-        'enabled': True,
         'needs': [
             'action:generate_dhparam',
             'pkg_dnf:nginx',
@@ -25,24 +24,17 @@ directories = {
     },
     "/etc/nginx/global": {
         "mode": "0644",
-        "owner": "root",
-        "group": "root",
         'needs': [
             "pkg_dnf:nginx",
         ],
     },
     "/etc/nginx/generic": {
         "mode": "0644",
-        "owner": "root",
-        "group": "root",
         'needs': [
             "pkg_dnf:nginx",
         ],
     },
     "/etc/nginx/extras": {
-        "mode": "0644",
-        "owner": "root",
-        "group": "root",
         'needs': [
             "pkg_dnf:nginx",
         ],
@@ -63,8 +55,6 @@ actions = {
 files = {
     '/etc/nginx/nginx.conf': {
         'source': "nginx.conf",
-        'owner': "root",
-        'group': "root",
         'mode': "0644",
         'content_type': "mako",
         'needs': [
@@ -76,8 +66,6 @@ files = {
     },
     '/etc/nginx/conf.d/ssl.conf': {
         'source': "ssl.conf",
-        'owner': "root",
-        'group': "root",
         'mode': "0644",
         'needs': [
             "pkg_dnf:nginx",
@@ -89,8 +77,6 @@ files = {
     '/etc/nginx/conf.d/status.conf': {
         'source': "status",
         'mode': "0644",
-        'owner': "root",
-        'group': "root",
         'triggers': [
             "svc_systemd:nginx:restart",
         ],
@@ -100,8 +86,6 @@ files = {
     },
     '/etc/nginx/global/fpm.conf': {
         'source': "fpm.conf",
-        'owner': "root",
-        'group': "root",
         'mode': "0644",
         'needs': [
             "pkg_dnf:nginx",
@@ -112,8 +96,6 @@ files = {
     },
     '/etc/nginx/global/restrictions.conf': {
         'source': "restrictions.conf",
-        'owner': "root",
-        'group': "root",
         'mode': "0644",
         'needs': [
             "pkg_dnf:nginx",
@@ -124,8 +106,6 @@ files = {
     },
     '/etc/logrotate.d/nginx': {
         'source': 'logrotate',
-        'owner': 'root',
-        'group': 'root',
         'mode': '0644',
         'content_type': 'mako',
     },
@@ -156,8 +136,6 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
     files['/etc/nginx/conf.d/vhost_{}.conf'.format(vhost_name)] = {
         'content_type': 'mako',
         'source': "vhost_template",
-        'owner': "root",
-        'group': "root",
         'mode': "0644",
         'context': {
             'vhost': vhost,
@@ -181,8 +159,6 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
         files['/opt/dehydrated/config_{}'.format(vhost_name)] = {
             'content_type': 'mako',
             'source': "dehydrated_config_template",
-            'owner': "root",
-            'group': "root",
             'mode': "0644",
             'context': {
                 'vhost_name': vhost_name,
@@ -195,8 +171,6 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
         files['/etc/cron.d/dehydrated_{}'.format(vhost_name)] = {
             'content_type': 'mako',
             'source': "dehydrated_cron_template",
-            'owner': "root",
-            'group': "root",
             'mode': "0644",
             'context': {
                 'vhost_name': vhost_name,
@@ -209,8 +183,6 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
 
         files['/opt/dehydrated/hook.sh'] = {
             'source': "dehydrated_hook",
-            'owner': "root",
-            'group': "root",
             'mode': "0744",
             'needs': [
                 "git_deploy:/opt/dehydrated",
@@ -233,8 +205,6 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
         files['/etc/ssl/{}.crt'.format(vhost_name)] = {
             'content_type': 'mako',
             'source': "etc/ssl/{}.{}.crt".format(node.name, vhost_name),
-            'owner': "root",
-            'group': "root",
             'mode': "0644",
             'triggers': [
                 "svc_systemd:nginx:reload",
@@ -244,8 +214,6 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
         files['/etc/ssl/private/{}.key'.format(vhost_name)] = {
             'content_type': 'mako',
             'source': "etc/ssl/{}.{}.key".format(node.name, vhost_name),
-            'owner': "root",
-            'group': "root",
             'mode': "0600",
             'triggers': [
                 "svc_systemd:nginx:reload",
@@ -256,8 +224,6 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
         files['/etc/nginx/generic/{}'.format(vhost['generic'])] = {
             'content_type': 'text',
             'source': "generic/{}".format(vhost['generic']),
-            'owner': "root",
-            'group': "root",
             'mode': "0644",
             'needs': [
                 "pkg_dnf:nginx",
@@ -271,8 +237,6 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
         files['/etc/nginx/extras/{}'.format(vhost_name)] = {
             'content_type': 'text',
             'source': "etc/nginx/extras/{}.{}".format(node.name, vhost_name),
-            'owner': "root",
-            'group': "root",
             'mode': "0644",
             'needs': [
                 "pkg_dnf:nginx",
@@ -300,15 +264,11 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
         files['/var/www/{}/htdocs/404.html'.format(vhost_name)] = {
             'content_type': 'text',
             'source': "error_pages/{}.{}.404.html".format(node.name, vhost_name),
-            'owner': "root",
-            'group': "root",
             'mode': "0644",
         }
         files['/var/www/{}/htdocs/50x.html'.format(vhost_name)] = {
             'content_type': 'text',
             'source': "error_pages/{}.{}.50x.html".format(node.name, vhost_name),
-            'owner': "root",
-            'group': "root",
             'mode': "0644",
         }
 
@@ -316,8 +276,6 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
         files['/etc/monit.d/nginx'] = {
             'source': "monit",
             'mode': "0640",
-            'owner': "root",
-            'group': "root",
             'content_type': "mako",
             'context': {
                 'vhost': vhost,
@@ -333,8 +291,6 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
         files['/etc/collectd.d/php-fpm_{}.conf'.format(vhost_name)] = {
             'source': "collectd_php-fpm_template.conf",
             'mode': "0640",
-            'owner': "root",
-            'group': "root",
             'content_type': "mako",
             'context': {
                 'vhost': vhost,
@@ -407,8 +363,6 @@ if node.has_bundle("collectd"):
     files['/etc/collectd.d/nginx.conf'] = {
         'source': "collectd_nginx.conf",
         'mode': "0640",
-        'owner': "root",
-        'group': "root",
         'needs': [
             "pkg_dnf:collectd-nginx",
         ],
@@ -420,8 +374,6 @@ if node.has_bundle("collectd"):
     files['/etc/collectd.d/php-fpm.conf'] = {
         'source': "collectd_php-fpm.conf",
         'mode': "0640",
-        'owner': "root",
-        'group': "root",
         'needs': [
             "pkg_dnf:collectd-nginx",
         ],
@@ -433,8 +385,6 @@ if node.has_bundle("collectd"):
     files['/etc/collectd.d/types/php-fpm.db'] = {
         'source': "collectd_php-fpm.types",
         'mode': "0640",
-        'owner': "root",
-        'group': "root",
         'triggers': [
             "svc_systemd:collectd:restart",
         ],
