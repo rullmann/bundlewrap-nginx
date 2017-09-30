@@ -252,7 +252,6 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
         files['/var/www/{}/.htpasswd-{}'.format(vhost_name, htpasswd_suffix)] = {
             'source': "htpasswd",
             'content_type': 'mako',
-            'owner': "root",
             'group': node.metadata['nginx'].get('user', 'nginx'),
             'mode': "0640",
             'context': {
