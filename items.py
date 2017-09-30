@@ -6,10 +6,7 @@ pkg_dnf = {
 
 svc_systemd = {
     'nginx': {
-        'needs': [
-            'action:generate_dhparam',
-            'pkg_dnf:nginx',
-        ],
+        'needs': ['action:generate_dhparam', 'pkg_dnf:nginx'],
     },
 }
 
@@ -18,26 +15,18 @@ directories = {
         'mode': '0755',
         'owner': 'nginx',
         'group': 'nginx',
-        'needs': [
-            'pkg_dnf:nginx',
-        ],
+        'needs': ['pkg_dnf:nginx'],
     },
     '/etc/nginx/global': {
         'mode': '0644',
-        'needs': [
-            'pkg_dnf:nginx',
-        ],
+        'needs': ['pkg_dnf:nginx'],
     },
     '/etc/nginx/generic': {
         'mode': '0644',
-        'needs': [
-            'pkg_dnf:nginx',
-        ],
+        'needs': ['pkg_dnf:nginx'],
     },
     '/etc/nginx/extras': {
-        'needs': [
-            'pkg_dnf:nginx',
-        ],
+        'needs': ['pkg_dnf:nginx'],
     },
 }
 
@@ -46,9 +35,7 @@ actions = {
         'command': 'openssl dhparam -out /etc/ssl/dhparams.pem 4096',
         'unless': 'test -f /etc/ssl/dhparams.pem',
         'cascade_skip': False,
-        'needs': [
-            'pkg_dnf:openssl',
-        ],
+        'needs': ['pkg_dnf:openssl'],
     },
 }
 
@@ -57,52 +44,32 @@ files = {
         'source': 'nginx.conf',
         'mode': '0644',
         'content_type': 'mako',
-        'needs': [
-            'pkg_dnf:nginx',
-        ],
-        'triggers': [
-            'svc_systemd:nginx:restart',
-        ],
+        'needs': ['pkg_dnf:nginx'],
+        'triggers': ['svc_systemd:nginx:restart'],
     },
     '/etc/nginx/conf.d/ssl.conf': {
         'source': 'ssl.conf',
         'mode': '0644',
-        'needs': [
-            'pkg_dnf:nginx',
-        ],
-        'triggers': [
-            'svc_systemd:nginx:restart',
-        ],
+        'needs': ['pkg_dnf:nginx'],
+        'triggers': ['svc_systemd:nginx:restart'],
     },
     '/etc/nginx/conf.d/status.conf': {
         'source': 'status',
         'mode': '0644',
-        'triggers': [
-            'svc_systemd:nginx:restart',
-        ],
-        'needs': [
-            'pkg_dnf:nginx',
-        ],
+        'needs': ['pkg_dnf:nginx'],
+        'triggers': ['svc_systemd:nginx:restart'],
     },
     '/etc/nginx/global/fpm.conf': {
         'source': 'fpm.conf',
         'mode': '0644',
-        'needs': [
-            'pkg_dnf:nginx',
-        ],
-        'triggers': [
-            'svc_systemd:nginx:restart',
-        ],
+        'needs': ['pkg_dnf:nginx'],
+        'triggers': ['svc_systemd:nginx:restart'],
     },
     '/etc/nginx/global/restrictions.conf': {
         'source': 'restrictions.conf',
         'mode': '0644',
-        'needs': [
-            'pkg_dnf:nginx',
-        ],
-        'triggers': [
-            'svc_systemd:nginx:restart',
-        ],
+        'needs': ['pkg_dnf:nginx'],
+        'triggers': ['svc_systemd:nginx:restart'],
     },
     '/etc/logrotate.d/nginx': {
         'source': 'logrotate',
@@ -141,12 +108,8 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
             'vhost': vhost,
             'vhost_name': vhost_name,
         },
-        'needs': [
-            'pkg_dnf:nginx',
-        ],
-        'triggers': [
-            'svc_systemd:nginx:reload',
-        ],
+        'needs': ['pkg_dnf:nginx'],
+        'triggers': ['svc_systemd:nginx:reload'],
     }
 
     if 'letsencrypt' in vhost:
@@ -163,9 +126,7 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
             'context': {
                 'vhost_name': vhost_name,
             },
-            'needs': [
-                'git_deploy:/opt/dehydrated',
-            ],
+            'needs': ['git_deploy:/opt/dehydrated'],
         }
 
         files['/etc/cron.d/dehydrated_{}'.format(vhost_name)] = {
@@ -176,17 +137,13 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
                 'vhost_name': vhost_name,
                 'domain': domain,
             },
-            'needs': [
-                'git_deploy:/opt/dehydrated',
-            ],
+            'needs': ['git_deploy:/opt/dehydrated'],
         }
 
         files['/opt/dehydrated/hook.sh'] = {
             'source': 'dehydrated_hook',
             'mode': '0744',
-            'needs': [
-                'git_deploy:/opt/dehydrated',
-            ],
+            'needs': ['git_deploy:/opt/dehydrated'],
         }
 
         if vhost.get('letsencrypt', {}).get('bootstrap', False):
@@ -194,10 +151,7 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
             actions['nginx_letsencrypt_initial_request_{}'.format(domain)] = {
                 'command': '/opt/dehydrated/dehydrated -c -d {} -f /opt/dehydrated/config_{}'.format(domain, vhost_name),
                 'cascade_skip': False,
-                'needs': [
-                    'pkg_dnf:nginx',
-                    'git_deploy:/opt/dehydrated',
-                ],
+                'needs': ['pkg_dnf:nginx', 'git_deploy:/opt/dehydrated'],
             }
 
     if not 'letsencrypt' in vhost:
@@ -206,18 +160,14 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
             'content_type': 'mako',
             'source': 'etc/ssl/{}.{}.crt'.format(node.name, vhost_name),
             'mode': '0644',
-            'triggers': [
-                'svc_systemd:nginx:reload',
-            ],
+            'triggers': ['svc_systemd:nginx:reload'],
         }
 
         files['/etc/ssl/private/{}.key'.format(vhost_name)] = {
             'content_type': 'mako',
             'source': 'etc/ssl/{}.{}.key'.format(node.name, vhost_name),
             'mode': '0600',
-            'triggers': [
-                'svc_systemd:nginx:reload',
-            ],
+            'triggers': ['svc_systemd:nginx:reload'],
         }
 
     if 'generic' in vhost:
@@ -225,12 +175,8 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
             'content_type': 'text',
             'source': 'generic/{}'.format(vhost['generic']),
             'mode': '0644',
-            'needs': [
-                'pkg_dnf:nginx',
-            ],
-            'triggers': [
-                'svc_systemd:nginx:reload',
-            ],
+            'needs': ['pkg_dnf:nginx'],
+            'triggers': ['svc_systemd:nginx:reload'],
         }
 
     if 'extras' in vhost:
@@ -238,12 +184,8 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
             'content_type': 'text',
             'source': 'etc/nginx/extras/{}.{}'.format(node.name, vhost_name),
             'mode': '0644',
-            'needs': [
-                'pkg_dnf:nginx',
-            ],
-            'triggers': [
-                'svc_systemd:nginx:reload',
-            ],
+            'needs': ['pkg_dnf:nginx'],
+            'triggers': ['svc_systemd:nginx:reload'],
         }
 
     for (_, basic_auth) in vhost.get('basic_auth', {}).items():
@@ -281,9 +223,7 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
                 'vhost_name': vhost_name,
                 'domain': domain,
             },
-            'triggers': [
-                'svc_systemd:monit:restart',
-            ],
+            'triggers': ['svc_systemd:monit:restart'],
         }
 
     if node.has_bundle('collectd') and 'fpm_proxy' in vhost:
@@ -296,9 +236,7 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
                 'vhost_name': vhost_name,
                 'domain': domain,
             },
-            'triggers': [
-                'svc_systemd:collectd:restart',
-            ],
+            'triggers': ['svc_systemd:collectd:restart'],
         }
 
 if node.has_bundle('firewalld'):
@@ -308,12 +246,8 @@ if node.has_bundle('firewalld'):
                 'command': 'firewall-cmd --permanent --zone={} --add-service=http --add-service=https'.format(zone),
                 'unless': 'firewall-cmd --zone={} --list-services | grep https'.format(zone),
                 'cascade_skip': False,
-                'needs': [
-                    'pkg_dnf:firewalld',
-                ],
-                'triggers': [
-                    'action:firewalld_reload',
-                ],
+                'needs': ['pkg_dnf:firewalld'],
+                'triggers': ['action:firewalld_reload'],
             }
     elif node.metadata.get('firewalld', {}).get('default_zone'):
         default_zone = node.metadata.get('firewalld', {}).get('default_zone')
@@ -321,12 +255,8 @@ if node.has_bundle('firewalld'):
             'command': 'firewall-cmd --permanent --zone={} --add-service=http --add-service=https'.format(default_zone),
             'unless': 'firewall-cmd --zone={} --list-services | grep https'.format(default_zone),
             'cascade_skip': False,
-            'needs': [
-                'pkg_dnf:firewalld',
-            ],
-            'triggers': [
-                'action:firewalld_reload',
-            ],
+            'needs': ['pkg_dnf:firewalld'],
+            'triggers': ['action:firewalld_reload'],
         }
     elif node.metadata.get('firewalld', {}).get('custom_zones', False):
         for interface in node.metadata['interfaces']:
@@ -335,24 +265,16 @@ if node.has_bundle('firewalld'):
                 'command': 'firewall-cmd --permanent --zone={} --add-service=http --add-service=https'.format(custom_zone),
                 'unless': 'firewall-cmd --zone={} --list-services | grep https'.format(custom_zone),
                 'cascade_skip': False,
-                'needs': [
-                    'pkg_dnf:firewalld',
-                ],
-                'triggers': [
-                    'action:firewalld_reload',
-                ],
+                'needs': ['pkg_dnf:firewalld'],
+                'triggers': ['action:firewalld_reload'],
             }
     else:
         actions['firewalld_add_https'] = {
             'command': 'firewall-cmd --permanent --add-service=http --add-service=https',
             'unless': 'firewall-cmd --list-services | grep https',
             'cascade_skip': False,
-            'needs': [
-                'pkg_dnf:firewalld',
-            ],
-            'triggers': [
-                'action:firewalld_reload',
-            ],
+            'needs': ['pkg_dnf:firewalld'],
+            'triggers': ['action:firewalld_reload'],
         }
 
 if node.has_bundle('collectd'):
@@ -362,29 +284,19 @@ if node.has_bundle('collectd'):
     files['/etc/collectd.d/nginx.conf'] = {
         'source': 'collectd_nginx.conf',
         'mode': '0640',
-        'needs': [
-            'pkg_dnf:collectd-nginx',
-        ],
-        'triggers': [
-            'svc_systemd:collectd:restart',
-        ],
+        'needs': ['pkg_dnf:collectd-nginx'],
+        'triggers': ['svc_systemd:collectd:restart'],
     }
 
     files['/etc/collectd.d/php-fpm.conf'] = {
         'source': 'collectd_php-fpm.conf',
         'mode': '0640',
-        'needs': [
-            'pkg_dnf:collectd-nginx',
-        ],
-        'triggers': [
-            'svc_systemd:collectd:restart',
-        ],
+        'needs': ['pkg_dnf:collectd-nginx'],
+        'triggers': ['svc_systemd:collectd:restart'],
     }
 
     files['/etc/collectd.d/types/php-fpm.db'] = {
         'source': 'collectd_php-fpm.types',
         'mode': '0640',
-        'triggers': [
-            'svc_systemd:collectd:restart',
-        ],
+        'triggers': ['svc_systemd:collectd:restart'],
     }
