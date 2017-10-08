@@ -76,6 +76,12 @@ files = {
         'mode': '0644',
         'content_type': 'mako',
     },
+    '/etc/systemd/system/nginx.service.d/environment.conf': {
+        'content_type': 'mako',
+        'mode': '0644',
+        'source': 'systemd-environment.conf',
+        'triggers': ['svc_systemd:nginx:restart', 'action:systemd-daemon-reload'],
+    },
 }
 
 for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
