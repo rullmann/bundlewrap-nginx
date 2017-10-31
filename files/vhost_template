@@ -42,6 +42,7 @@ server {
     add_header X-Frame-Options "DENY" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-XSS-Protection "1; mode=block" always;
+    add_header "X-UA-Compatible" "IE=Edge" always;
 
 % if vhost.get('force_domain', True):
     set $primary_domain "${vhost.get('domain', vhost_name)}";
