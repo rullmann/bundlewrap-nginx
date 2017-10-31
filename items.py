@@ -47,6 +47,12 @@ files = {
         'needs': ['pkg_dnf:nginx'],
         'triggers': ['svc_systemd:nginx:restart'],
     },
+    '/etc/nginx/mime.types': {
+        'source': 'mime.types',
+        'mode': '0644',
+        'needs': ['pkg_dnf:nginx'],
+        'triggers': ['svc_systemd:nginx:restart'],
+    },
     '/etc/nginx/conf.d/ssl.conf': {
         'source': 'ssl.conf',
         'mode': '0644',
