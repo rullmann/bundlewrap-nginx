@@ -83,7 +83,7 @@ server {
 % endif
 
 % if vhost.get('hsts', True):
-    add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 % endif
     ssl_session_cache builtin:1000 shared:SSL:10m;
 
