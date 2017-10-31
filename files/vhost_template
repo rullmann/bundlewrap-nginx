@@ -39,9 +39,9 @@ server {
                 ;
 
     server_tokens off;
-    add_header X-Frame-Options DENY;
-    add_header X-Content-Type-Options nosniff;
-    add_header X-XSS-Protection "1; mode=block";
+    add_header X-Frame-Options "DENY" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
 
 % if vhost.get('force_domain', True):
     set $primary_domain "${vhost.get('domain', vhost_name)}";
