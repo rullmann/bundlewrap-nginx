@@ -169,7 +169,7 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
             actions['nginx_letsencrypt_initial_request_{}'.format(domain)] = {
                 'command': '/opt/dehydrated/dehydrated -c -d {} -f /opt/dehydrated/config_{}'.format(domain, vhost_name),
                 'cascade_skip': False,
-                'needs': ['pkg_dnf:nginx', 'git_deploy:/opt/dehydrated', 'action:nginx_letsencrypt_accept_terms_{}'.format(domain)],
+                'needs': ['pkg_dnf:nginx', 'svc_systemd:nginx', 'git_deploy:/opt/dehydrated', 'action:nginx_letsencrypt_accept_terms_{}'.format(domain)],
             }
 
     if not 'letsencrypt' in vhost:
