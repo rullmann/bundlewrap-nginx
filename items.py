@@ -56,6 +56,7 @@ files = {
     '/etc/nginx/conf.d/ssl.conf': {
         'source': 'ssl.conf',
         'mode': '0644',
+        'content_type': 'mako',
         'needs': ['pkg_dnf:nginx'],
         'triggers': ['svc_systemd:nginx:restart'],
     },
