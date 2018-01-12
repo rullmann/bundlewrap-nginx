@@ -1,13 +1,19 @@
-<%text># Resolve names to addresses of IP version only. (curl)
+# Which user should dehydrated run as? This will be implictly enforced when running as root
+#DEHYDRATED_USER=
+
+# Which group should dehydrated run as? This will be implictly enforced when running as root
+#DEHYDRATED_GROUP=
+
+# Resolve names to addresses of IP version only. (curl)
 # supported values: 4, 6
 # default: <unset>
 #IP_VERSION=
 
-# Path to certificate authority (default: https://acme-v01.api.letsencrypt.org/directory)
-#CA="https://acme-v01.api.letsencrypt.org/directory"
+# Path to certificate authority license terms redirect (default: https://acme-v01.api.letsencrypt.org/terms)
+#CA_TERMS="https://acme-v01.api.letsencrypt.org/terms"
 
-# Path to license agreement (default: https://letsencrypt.org/documents/LE-SA-v1.1.1-August-1-2016.pdf)
-#LICENSE="https://letsencrypt.org/documents/LE-SA-v1.1.1-August-1-2016.pdf"
+# Path to license agreement (default: <unset>)
+#LICENSE=""
 
 # Which challenge should be used? Currently http-01 and dns-01 are supported
 #CHALLENGETYPE="http-01"
@@ -22,15 +28,15 @@
 BASEDIR=/etc/letsencrypt
 
 # Output directory for generated certificates
-#CERTDIR="${BASEDIR}/certs"
+#CERTDIR=<%text>"${BASEDIR}</%text>/certs"
 
 # Directory for account keys and registration information
-#ACCOUNTDIR="${BASEDIR}/accounts"
+#ACCOUNTDIR="<%text>${BASEDIR}</%text>/accounts"
 
-# Output directory for challenge-tokens to be served by webserver or deployed in HOOK (default: /var/www/dehydrated)</%text>
+# Output directory for challenge-tokens to be served by webserver or deployed in HOOK (default: /var/www/dehydrated)
 WELLKNOWN="/var/www/${vhost_name}/.well_known/"
 
-<%text># Default keysize for private keys (default: 4096)
+# Default keysize for private keys (default: 4096)
 KEYSIZE="4096"
 
 # Path to openssl config file (default: <unset> - tries to figure out system default)
@@ -57,6 +63,9 @@ HOOK=/opt/dehydrated/hook.sh
 # Regenerate private keys instead of just signing new certificates on renewal (default: yes)
 #PRIVATE_KEY_RENEW="yes"
 
+# Create an extra private key for rollover (default: no)
+#PRIVATE_KEY_ROLLOVER="no"
+
 # Which public key algorithm should be used? Supported: rsa, prime256v1 and secp384r1
 #KEY_ALGO=rsa
 
@@ -64,7 +73,16 @@ HOOK=/opt/dehydrated/hook.sh
 #CONTACT_EMAIL=
 
 # Lockfile location, to prevent concurrent access (default: $BASEDIR/lock)
-LOCKFILE="${BASEDIR}</%text>/lock_${vhost_name}"
+LOCKFILE="<%text>${BASEDIR}</%text>/lock_${vhost_name}"
 
-<%text># Option to add CSR-flag indicating OCSP stapling to be mandatory (default: no)
-#OCSP_MUST_STAPLE="no"</%text>
+# Option to add CSR-flag indicating OCSP stapling to be mandatory (default: no)
+#OCSP_MUST_STAPLE="no"
+
+# Fetch OCSP responses (default: no)
+#OCSP_FETCH="no"
+
+# Issuer chain cache directory (default: $BASEDIR/chains)
+#CHAINCACHE="<%text>${BASEDIR}</%text>/chains"
+
+# Automatic cleanup (default: no)
+#AUTO_CLEANUP="no"
