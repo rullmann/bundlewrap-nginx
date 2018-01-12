@@ -1,6 +1,29 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-if [ ${1} == "deploy_cert" ]; then
-    echo " - Restarting nginx"
-    /usr/bin/systemctl restart nginx
+deploy_cert() {
+    local DOMAIN="${1}" KEYFILE="${2}" CERTFILE="${3}" FULLCHAINFILE="${4}" CHAINFILE="${5}" TIMESTAMP="${6}"
+
+    /usr/sbin/nginx -t
+    if [ $? -eq 0 ] ; then
+        /usr/bin/systemctl restart nginx
+    else
+        echo "nginx configuration test failed after renewing certificate for ${DOMAIN}. Please verify!"
+    fi
+}
+
+invalid_challenge() {
+    local DOMAIN="${1}" RESPONSE="${2}"
+
+    echo -e "Renewing certificate for ${DOMAIN} has failed with the following response:\n${RESPONSE}\n\nPlease check manually and renew certificate."
+}
+
+request_failure() {
+    local STATUSCODE="${1}" REASON="${2}" REQTYPE="${3}"
+
+    echo -e "Renewing certificate for ${REQTYPE} has failed with the following response:\n${STATUSCODE} / ${REASON}\n\nPlease check manually and renew certificate."
+}
+
+HANDLER="$1"; shift
+if [[ "${HANDLER}" =~ ^(deploy_cert|invalid_challenge|request_failure)$ ]]; then
+  "$HANDLER" "$@"
 fi
