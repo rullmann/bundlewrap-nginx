@@ -137,6 +137,7 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
             'source': 'dehydrated_config_template',
             'mode': '0644',
             'context': {
+                'vhost': vhost,
                 'vhost_name': vhost_name,
             },
             'needs': ['git_deploy:/opt/dehydrated'],
