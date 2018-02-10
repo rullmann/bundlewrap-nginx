@@ -71,7 +71,7 @@ server {
 % endif
 
     ## Access and error logs.
-    access_log /var/www/${vhost_name}/logs/access.log ${vhost.get('log_format', '')};
+    access_log /var/www/${vhost_name}/logs/access.log ${vhost.get('log_format', 'main')};
     error_log  /var/www/${vhost_name}/logs/error.log;
 
     ## Server certificate and key.
