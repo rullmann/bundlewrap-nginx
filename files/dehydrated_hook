@@ -6,6 +6,7 @@ deploy_cert() {
     /usr/sbin/nginx -t
     if [ $? -eq 0 ] ; then
         /usr/bin/systemctl restart nginx
+        cat $FULLCHAINFILE $KEYFILE > /etc/letsencrypt/certs/$DOMAIN/fullchainprivkey.pem
     else
         echo "nginx configuration test failed after renewing certificate for ${DOMAIN}. Please verify!"
     fi
