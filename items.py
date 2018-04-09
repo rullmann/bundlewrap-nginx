@@ -233,6 +233,19 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
             'mode': '0644',
         }
 
+    if node.metadata.get('nginx', {}).get('stream', False) == True:
+        files['/etc/nginx/stream.conf'] = {
+            'source': '{}.stream.conf'.format(node.name),
+            'mode': '0640',
+            'content_type': 'mako',
+            'context': {
+                'vhost': vhost,
+                'vhost_name': vhost_name,
+                'domain': domain,
+            },
+            'triggers': ['svc_systemd:nginx:restart'],
+        }
+
     if node.has_bundle('monit'):
         files['/etc/monit.d/nginx'] = {
             'source': 'monit',
