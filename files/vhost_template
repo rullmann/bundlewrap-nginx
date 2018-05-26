@@ -60,7 +60,9 @@ server {
 
     root /var/www/${vhost_name}/htdocs;
 
+% if vhost.get('disable_restrictions', False):
     include global/restrictions.conf;
+% endif
 
     # strip Proxy header to mitigate CGI vuln (https://httpoxy.org)
     # (when talking to other HTTP servers, i.e. load balancing)
