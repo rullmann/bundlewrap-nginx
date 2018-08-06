@@ -243,8 +243,10 @@ for vhost_name, vhost in sorted(node.metadata['nginx']['vhosts'].items()):
                 'vhost_name': vhost_name,
                 'domain': domain,
             },
+            'needs': ['pkg_dnf:nginx-mod-stream'],
             'triggers': ['svc_systemd:nginx:restart'],
         }
+        pkg_dnf['nginx-mod-stream'] = {}
 
     if node.has_bundle('monit'):
         files['/etc/monit.d/nginx'] = {
